@@ -13,7 +13,7 @@ const createWSServer = () => {
 
   server.on("connection", (ws) => {
     console.log(color.bgCyan("WS server connected!"))
-
+    ws.send(`${PROJECT_NAME} Connected`)
     ws.on("message", (data) => {
       console.log("Received: %s", data)
     })
@@ -29,7 +29,7 @@ export function createServer() {
   createWSServer()
 
   console.log(
-    `${color.bgBlue(PROJECT_NAME)} is running now
-    ${color.green(`http://127.0.0.1:${HTTP_PORT}`)}`
+    `${color.bgBlue(PROJECT_NAME)} is running now on
+${color.green(`http://127.0.0.1:${HTTP_PORT}`)}`
   )
 }
