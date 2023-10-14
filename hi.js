@@ -1,1 +1,3 @@
-console.log("123")
+export const echo = (message) => {
+  console.log(message)
+}
