@@ -36,3 +36,12 @@ export function getEntryPoint(module) {
 
   return module
 }
+
+export const getRelativePath = (p = __dirname) => {
+  const rootPath = process.cwd()
+  return path.join(path.relative(p, rootPath), p)
+}
+
+export const getDepModulePath = (module) => {
+  return path.join(getRelativePath("node_modules/.faai/deps"), module)
+}

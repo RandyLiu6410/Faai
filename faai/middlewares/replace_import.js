@@ -1,5 +1,8 @@
-import path from "path"
-import { getEntryPoint, getFilePathAndContentType } from "./utils"
+import {
+  getDepModulePath,
+  getEntryPoint,
+  getFilePathAndContentType,
+} from "../utils.js"
 
 const EXCLUDE_LIST = ["/faai/client.js"]
 /**
@@ -13,6 +16,9 @@ export const replaceImportMiddleware = async (req, res, next) => {
 
     const file = Bun.file(filePath)
     let content = await file.text()
+
+    // 匹配 "from " 後跟一對引號括起來的文本，但不包括以 "./" 開頭的文本
+    const regex = /from ['"](?!\.\/)([^'"]+)['"]/g
 
     // pre-bundling
     const matches = content.match(regex)
@@ -31,15 +37,12 @@ export const replaceImportMiddleware = async (req, res, next) => {
         ),
         outdir: "./node_modules/.faai/deps",
       })
-      console.log(modules)
     }
 
-    // 匹配 "from " 後跟一對引號括起來的文本，但不包括以 "./" 開頭的文本
-    const regex = /from ['"](?!\.\/)([^'"]+)['"]/g
     content = content.replace(regex, (_match, capture) => {
       const entryPoint = getEntryPoint(capture)
 
-      return `from "./node_modules/.faai/deps/${entryPoint}"`
+      return `from "${getDepModulePath(entryPoint)}"`
     })
 
     res.writeHead(200, {
@@ -49,32 +52,4 @@ export const replaceImportMiddleware = async (req, res, next) => {
   }
 
   next()
-}
-
-export const indexHTMLMiddleware = async (req, res) => {
-  const { filePath, contentType } = getFilePathAndContentType(req.url)
-
-  try {
-    const file = Bun.file(filePath)
-    let content = await file.text()
-
-    if (path.basename(filePath) === "index.html") {
-      const regex = /(<head>)([\s\S]*?<\/head>)/i
-      const match = content.match(regex)
-      const clientScript = '<script src="faai/client.js"></script>'
-      if (match) {
-        content = content.replace(match[0], match[1] + clientScript + match[2])
-      }
-    }
-
-    res.writeHead(200, {
-      "Content-Type": contentType,
-    })
-    res.end(content)
-  } catch {
-    res.writeHead(404, {
-      "Content-Type": "text/plain",
-    })
-    res.end("No file")
-  }
 }

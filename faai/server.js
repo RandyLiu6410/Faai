@@ -1,10 +1,13 @@
 import http from "http"
 import color from "picocolors"
 import connect from "connect"
-import { indexHTMLMiddleware, replaceImportMiddleware } from "./middleware"
+import chokidar from "chokidar"
+import { indexHTMLMiddleware, replaceImportMiddleware } from "./middlewares"
 import { WebSocketServer } from "ws"
+import { getRelativePath } from "./utils"
 
 const { PROJECT_NAME, HTTP_PORT, WS_PORT } = process.env
+const WATCH_LIST = ["index.html", "src/**/*.js", "src/**/*.css"]
 
 const createWSServer = () => {
   const server = new WebSocketServer({
@@ -13,7 +16,23 @@ const createWSServer = () => {
 
   server.on("connection", (ws) => {
     console.log(color.bgCyan("WS server connected!"))
-    ws.send(`${PROJECT_NAME} Connected`)
+    ws.send(
+      JSON.stringify({
+        type: "message",
+        content: `${PROJECT_NAME} Connected`,
+      })
+    )
+
+    // watcher
+    const watcher = chokidar.watch(WATCH_LIST)
+    watcher.on("change", (file) => {
+      const msgObj = {
+        type: "change",
+        file: getRelativePath(file),
+      }
+      ws.send(JSON.stringify(msgObj))
+    })
+
     ws.on("message", (data) => {
       console.log("Received: %s", data)
     })

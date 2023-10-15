@@ -4,13 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=<device-width>, initial-scale=1.0" />
     <title>Faai</title>
-    <link rel="stylesheet" href="/style.css" />
-    <script type="module" src="/app.js"></script>
+    <link rel="stylesheet" href="/src/style.css" />
+    <script type="module" src="/src/app.js"></script>
   </head>
   <body>
     <h1>Faai</h1>
+    <p id="date-field"></p>
     Lorem ipsum dolor, sit amet consectetur adipisicing elit. Odit assumenda
     eligendi in enim excepturi placeat porro eius voluptatum expedita, nisi
     voluptate sit quia nihil quibusdam neque cum modi provident debitis!
+
+    <script>
+      const el = document.querySelector("p#date-field")
+      el.textContent = new Date().getTime()
+    </script>
   </body>
 </html>
